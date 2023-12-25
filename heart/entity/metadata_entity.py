@@ -3,7 +3,7 @@ import os, sys
 
 from heart.utils import read_yaml_file, write_yaml_file
 from collections import namedtuple
-from heart.logging import logger
+from heart.logger import logging
 DataIngestionMetadataInfo = namedtuple("DataIngestionMetadataInfo", ["date", "data_file_path"])
 
 

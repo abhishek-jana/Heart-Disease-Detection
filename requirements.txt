@@ -6,5 +6,7 @@ pandas
 PyYAML
 numpy
 scikit-learn
+from-root
+dill
 kaggle
 -e .

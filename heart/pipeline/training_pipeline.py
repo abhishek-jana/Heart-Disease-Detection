@@ -1,21 +1,25 @@
 from heart.exception import HeartException
-from heart.logging import logger
-from heart.config.pipeline.training import HeartConfig
-from heart.component.training.data_ingesion import DataIngestion
+from heart.logger import logging
+from heart.components.data_ingesion import DataIngestion
 from heart.entity.artifact_entity import DataIngestionArtifact
+from heart.entity.config_entity import TrainingPipelineConfig,DataIngestionConfig
 import sys
 
 
 class TrainingPipeline:
 
-    def __init__(self, heart_config: HeartConfig):
-        self.heart_config: HeartConfig = heart_config
+    def __init__(self,training_config: TrainingPipelineConfig):
+        self.training_config = training_config
+        self.data_ingestion_config = DataIngestionConfig(training_pipeline_config=self.training_config)
 
     def start_data_ingestion(self) -> DataIngestionArtifact:
         try:
-            data_ingestion_config = self.heart_config.get_data_ingestion_config()
+            data_ingestion_config = self.data_ingestion_config
             data_ingestion = DataIngestion(data_ingestion_config=data_ingestion_config)
             data_ingestion_artifact = data_ingestion.initiate_data_ingestion()
+            logging.info(
+                "Exited the start_data_ingestion method of TrainPipeline class"
+            )
             return data_ingestion_artifact
 
         except Exception as e:

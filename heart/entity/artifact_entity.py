@@ -1,5 +1,5 @@
-from collections import namedtuple
-from datetime import datetime
+from dataclasses import dataclass
 
-DataIngestionArtifact = namedtuple("DataIngestionArtifact",
-                                   ["feature_store_file_path", "metadata_file_path", "download_dir"])
+@dataclass
+class DataIngestionArtifact:
+    feature_store_file_path: str
