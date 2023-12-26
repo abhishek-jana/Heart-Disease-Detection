@@ -8,7 +8,7 @@ ARTIFACT_DIR = "artifact"
 
 # Common filename
 
-FILE_NAME: str = "heart.csv"
+FILE_NAME: str = "Heart Attack.csv"
 
 TRAIN_FILE_NAME: str = "train.csv"
 
@@ -21,3 +21,5 @@ MODEL_FILE_NAME = "model.pkl"
 SCHEMA_FILE_PATH = os.path.join("config", "schema.yaml")
 
 SCHEMA_DROP_COLS = "drop_columns"
+
+SCHEMA_TARGET_COL = "target_column"

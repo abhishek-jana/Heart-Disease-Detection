@@ -1,0 +1,20 @@
+columns:
+- age: int64
+- gender: int64
+- impluse: int64
+- pressurehight: int64
+- pressurelow: int64
+- glucose: float64
+- kcm: float64
+- troponin: float64
+- class: object
+numerical_columns:
+- age
+- gender
+- impluse
+- pressurehight
+- pressurelow
+- glucose
+- kcm
+- troponin
+target_column: class
