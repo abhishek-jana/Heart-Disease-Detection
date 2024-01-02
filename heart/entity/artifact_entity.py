@@ -24,6 +24,8 @@ class DataValidationArtifact:
 class DataTrasformationArtifact:
     tramsformed_object_file_path: str
 
+    target_encoder_path:str
+
     trasformed_train_file_path: str
 
     transformed_test_file_path: str

@@ -8,4 +8,7 @@ numpy
 scikit-learn
 dill
 kaggle
+seaborn
+plotly-express
+imblearn
 -e .

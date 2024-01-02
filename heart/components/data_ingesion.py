@@ -14,7 +14,7 @@ from heart.logger import logging
 from datetime import datetime
 
 
-from heart.constant.training_pipeline import SCHEMA_FILE_PATH,SCHEMA_TARGET_COL,FILE_NAME
+from heart.constant.training_pipeline import SCHEMA_FILE_PATH,TARGET_COLUMN,FILE_NAME
 from heart.utils import read_yaml_file, write_yaml_file
 
 from kaggle.api.kaggle_api_extended import KaggleApi
@@ -71,11 +71,15 @@ class DataIngestion:
 
             logging.info("Performed train test split on the dataframe")
 
-            for train_index,test_index in split.split(dataframe, dataframe[self._schema_config[SCHEMA_TARGET_COL]]):
-                strat_train_set = dataframe.loc[train_index].drop([self._schema_config[SCHEMA_TARGET_COL]],axis=1)
-                strat_test_set = dataframe.loc[test_index].drop([self._schema_config[SCHEMA_TARGET_COL]],axis=1)
-
+            for train_index,test_index in split.split(dataframe, dataframe[TARGET_COLUMN]):
+                strat_train_set = dataframe.iloc[train_index].drop([TARGET_COLUMN],axis=1)
+                target_train_set = dataframe.iloc[train_index][TARGET_COLUMN]
+                strat_test_set = dataframe.iloc[test_index].drop([TARGET_COLUMN],axis=1)
+                target_test_set = dataframe.iloc[test_index][TARGET_COLUMN]
             logging.info("Performed train test split on the dataframe")
+            # Combine features and labels for both train and test sets
+            train_data = pd.concat([strat_train_set,target_train_set], axis=1)
+            test_data = pd.concat([strat_test_set,target_test_set], axis=1)
 
             logging.info(
                 "Exited split_data_as_train_test method of Data_Ingestion class"
@@ -87,11 +91,11 @@ class DataIngestion:
 
             logging.info(f"Exporting train and test file path.")
 
-            strat_train_set.to_csv(
+            train_data.to_csv(
                 self.data_ingestion_config.training_file_path, index=False, header=True
             )
 
-            strat_test_set.to_csv(
+            test_data.to_csv(
                 self.data_ingestion_config.testing_file_path, index=False, header=True
             )
 

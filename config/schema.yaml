@@ -8,13 +8,16 @@ columns:
 - kcm: float64
 - troponin: float64
 - class: object
+
 numerical_columns:
 - age
-- gender
 - impluse
 - pressurehight
 - pressurelow
 - glucose
 - kcm
 - troponin
-target_column: class
+
+categorical_columns: 
+- gender
+

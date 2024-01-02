@@ -110,10 +110,10 @@ class DataValidation:
             #creating artifact
             data_validation_artifact = DataValidationArtifact(
                 validation_status = is_drift_detected,
-                valid_train_file_path = self.data_validation_config.valid_train_file_path,
-                valid_test_file_path = self.data_validation_config.valid_test_file_path,
-                invalid_train_file_path = self.data_validation_config.invalid_train_file_path,
-                invalid_test_file_path = self.data_validation_config.invalid_test_file_path,
+                valid_train_file_path = self.data_ingestion_artifact.train_file_path,
+                valid_test_file_path = self.data_ingestion_artifact.test_file_path,
+                invalid_train_file_path = None,
+                invalid_test_file_path = None,
                 drift_report_file_path = self.data_validation_config.drift_report_file_path
             )
 
