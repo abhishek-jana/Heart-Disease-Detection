@@ -6,7 +6,7 @@ import pymongo
 
 from heart.constant.database import DATABASE_NAME
 from heart.constant.env_variable import MONGODB_URL_KEY
-from heart.exception import SensorException
+from heart.exception import HeartException
 
 ca = certifi.where()
 
@@ -31,4 +31,4 @@ class MongoDBClient:
             self.database_name = database_name
 
         except Exception as e:
-            raise SensorException(e, sys)
+            raise HeartException(e, sys)

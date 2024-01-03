@@ -21,17 +21,18 @@ class DataValidationArtifact:
     drift_report_file_path: str
 
 @dataclass
-class DataTrasformationArtifact:
-    tramsformed_object_file_path: str
+class DataTransformationArtifact:
+    
+    transformed_object_file_path: str
 
-    target_encoder_path:str
+    target_encoder_path: str
 
-    trasformed_train_file_path: str
+    transformed_train_file_path: str
 
     transformed_test_file_path: str
 
 @dataclass
-class ClassficationMetricArtifact:
+class ClassificationMetricArtifact:
     f1_score: str
 
     precision_score: str
@@ -42,19 +43,25 @@ class ClassficationMetricArtifact:
 class ModelTrainerArtifact:
     trained_model_file_path: str
 
-    metric_artifact: ClassficationMetricArtifact
+    train_metric_artifact: ClassificationMetricArtifact
+
+    test_metric_artifact: ClassificationMetricArtifact
 
 @dataclass
 class ModelEvaluationArtifact:
     is_model_accepted: bool
 
-    changed_accuracy: float
+    improved_accuracy: float
 
     best_model_path: str
 
     trained_model_path: str
 
-    best_model_metric_artifact: str
+    train_model_metric_artifact: ClassificationMetricArtifact
+
+    best_model_metric_artifact: ClassificationMetricArtifact
+
+
 
 @dataclass
 class ModelPusherArtifact:

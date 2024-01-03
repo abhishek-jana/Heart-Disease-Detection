@@ -11,4 +11,5 @@ kaggle
 seaborn
 plotly-express
 imblearn
+xgboost
 -e .

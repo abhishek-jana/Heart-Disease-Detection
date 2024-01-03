@@ -6,7 +6,6 @@ from heart.constant.training_pipeline.model_evaluation import *
 from heart.constant.training_pipeline.model_trainer import *
 from heart.constant.training_pipeline.model_pusher import *
 
-
 PIPELINE_NAME = "heart"
 ARTIFACT_DIR = "artifact"
 
