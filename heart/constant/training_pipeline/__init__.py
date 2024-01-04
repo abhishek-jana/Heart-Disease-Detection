@@ -9,6 +9,11 @@ from heart.constant.training_pipeline.model_pusher import *
 PIPELINE_NAME = "heart"
 ARTIFACT_DIR = "artifact"
 
+# SAVED_MODEL_DIR = "saved_models"
+# TRANSFORMER_DIR_NAME = "transformer"
+# TARGET_ENCODER_DIR_NAME = "target_encoder"
+# MODEL_DIR_NAME = "model"
+
 # Common filename
 
 FILE_NAME: str = "Heart Attack.csv"

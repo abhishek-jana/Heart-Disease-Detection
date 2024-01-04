@@ -4,15 +4,21 @@ from heart.components.data_ingesion import DataIngestion
 from heart.components.data_validation import DataValidation
 from heart.components.data_transformation import DataTransformation
 from heart.components.model_trainer import ModelTrainer
+from heart.components.model_evaluation import ModelEvaluation
+from heart.components.model_pusher import ModelPusher
 from heart.entity.artifact_entity import (DataIngestionArtifact,
                                           DataValidationArtifact,
                                           DataTransformationArtifact,
-                                          ModelTrainerArtifact)
+                                          ModelTrainerArtifact,
+                                          ModelEvaluationArtifact,
+                                          ModelPusherArtifact)
 from heart.entity.config_entity import (TrainingPipelineConfig,
                                         DataIngestionConfig,
                                         DataValidationConfig,
                                         DataTransformationConfig,
-                                        ModelTrainerConfig)
+                                        ModelTrainerConfig,
+                                        ModelEvaluationConfig,
+                                        ModelPusherConfig)
 import sys
 
 
@@ -71,24 +77,46 @@ class TrainingPipeline:
         except Exception as e:
             raise HeartException(e, sys)
         
-    # def start_model_evaluation(self, data_validation_artifact: DataValidationArtifact, model_trainer_artifact: ModelTrainerArtifact):
-    #     try:
-    #         model_evaluation_config = ModelEvaluationConfig(training_pipeline_config=self.training_config)
-    #         model_eval = ModelEvaluation(model_evaluation_config=model_evaluation_config,
-    #                                      data_validation_artifact=data_validation_artifact,
-    #                                      model_trainer_artifact=model_trainer_artifact)
-    #         model_eval_artifact = model_eval.initiate_model_evaluation()
-    #         return model_eval_artifact
-    #     except Exception as e:
-    #         raise HeartException(e, sys)
+    def start_model_evaluation(self,data_validation_artifact: DataValidationArtifact,
+                            data_transformation_artifact: DataTransformationArtifact,
+                            model_trainer_artifact: ModelTrainerArtifact):
+        try:
+            model_evaluation_config = ModelEvaluationConfig(training_pipeline_config=self.training_config)
+            model_eval = ModelEvaluation(model_evaluation_config=model_evaluation_config,
+                                         data_validation_artifact=data_validation_artifact,
+                                         data_transformation_artifact = data_transformation_artifact,
+                                         model_trainer_artifact=model_trainer_artifact)
+            model_eval_artifact = model_eval.initiate_model_evaluation()
+            return model_eval_artifact
+        except Exception as e:
+            raise HeartException(e, sys)
+        
+    def start_model_pusher(self,data_transformation_artifact: DataTransformationArtifact,model_eval_artifact:ModelEvaluationArtifact):
+        try:
+            model_pusher_config = ModelPusherConfig(training_pipeline_config=self.training_config)
+            model_pusher = ModelPusher(model_pusher_config = model_pusher_config, 
+                                       data_transformation_artifact = data_transformation_artifact,
+                                       model_eval_artifact = model_eval_artifact)
+            model_pusher_artifact = model_pusher.initiate_model_pusher()
+            return model_pusher_artifact
+        except  Exception as e:
+            raise  HeartException(e,sys)
 
 
     def start(self):
         try:
+            TrainingPipeline.is_pipeline_running=True
             data_ingestion_artifact = self.start_data_ingestion()
             data_validation_artifact = self.start_data_validation(data_ingestion_artifact=data_ingestion_artifact)
             data_transformation_artifact = self.start_data_transformation(data_validation_artifact=data_validation_artifact)
-            model_trainer_artifact = self.start_model_trainer(data_transformation_artifact)
-            # model_eval_artifact = self.start_model_evaluation(data_validation_artifact, model_trainer_artifact)
+            model_trainer_artifact = self.start_model_trainer(data_transformation_artifact = data_transformation_artifact)
+            model_eval_artifact = self.start_model_evaluation(data_validation_artifact = data_validation_artifact,
+                                                            data_transformation_artifact = data_transformation_artifact,
+                                                            model_trainer_artifact = model_trainer_artifact)
+            if not model_eval_artifact.is_model_accepted:
+                raise Exception("Trained model is not better than the best model")
+            model_pusher_artifact = self.start_model_pusher(data_transformation_artifact = data_transformation_artifact,
+                                                            model_eval_artifact = model_eval_artifact)
+            TrainingPipeline.is_pipeline_running=False
         except Exception as e:
             raise HeartException(e, sys)

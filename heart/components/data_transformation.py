@@ -14,7 +14,6 @@ from heart.entity.artifact_entity import (DataValidationArtifact,
                                           DataTransformationArtifact)
 from heart.entity.config_entity import DataTransformationConfig
 
-from heart.ml.model.estimator import TargetValueMapping
 from heart.utils import save_numpy_array_data, save_object
 from heart.utils import read_yaml_file
 
@@ -119,7 +118,7 @@ class DataTransformation:
 
             save_object(
                 file_path=self.data_transformation_config.target_encoder_path,
-                obj=preprocessor_obj
+                obj=label_encoder
             )
 
             logging.info("Saving train array and test array")

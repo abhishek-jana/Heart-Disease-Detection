@@ -1,7 +1,7 @@
-
 from heart.exception import HeartException
 from heart.logger import logging
-from heart.entity.artifact_entity import DataValidationArtifact,ModelTrainerArtifact,ModelEvaluationArtifact
+from heart.entity.artifact_entity import (DataValidationArtifact,DataTransformationArtifact,
+                                        ModelTrainerArtifact,ModelEvaluationArtifact)
 from heart.entity.config_entity import ModelEvaluationConfig
 import os,sys
 from heart.ml.metric.classification_metric import get_classification_score
@@ -9,19 +9,21 @@ from heart.ml.model.estimator import HeartModel
 from heart.utils import save_object,load_object,write_yaml_file
 from heart.ml.model.estimator import ModelResolver
 from heart.constant.training_pipeline import TARGET_COLUMN
-from heart.ml.model.estimator import TargetValueMapping
 import pandas  as  pd
 class ModelEvaluation:
 
 
-    def __init__(self,model_eval_config:ModelEvaluationConfig,
-                    data_validation_artifact:DataValidationArtifact,
-                    model_trainer_artifact:ModelTrainerArtifact):
+    def __init__(self,model_evaluation_config:ModelEvaluationConfig,
+                data_validation_artifact:DataValidationArtifact,
+                data_transformation_artifact: DataTransformationArtifact,                
+                model_trainer_artifact:ModelTrainerArtifact):
         
         try:
-            self.model_eval_config=model_eval_config
+            self.model_eval_config=model_evaluation_config
+            self.data_transformation_artifact=data_transformation_artifact
             self.data_validation_artifact=data_validation_artifact
             self.model_trainer_artifact=model_trainer_artifact
+            self.model_resolver = ModelResolver()
         except Exception as e:
             raise HeartException(e,sys)
     
@@ -29,24 +31,15 @@ class ModelEvaluation:
 
     def initiate_model_evaluation(self)->ModelEvaluationArtifact:
         try:
-            valid_train_file_path = self.data_validation_artifact.valid_train_file_path
-            valid_test_file_path = self.data_validation_artifact.valid_test_file_path
+            #if saved model folder has model the we will compare 
+            #which model is best trained or the model from saved model folder
 
-            #valid train and test file dataframe
-            train_df = pd.read_csv(valid_train_file_path)
-            test_df = pd.read_csv(valid_test_file_path)
-
-            df = pd.concat([train_df,test_df])
-            y_true = df[TARGET_COLUMN]
-            y_true.replace(TargetValueMapping().to_dict(),inplace=True)
-            df.drop(TARGET_COLUMN,axis=1,inplace=True)
-
+            logging.info("if saved model folder has model the we will compare "
+            "which model is best trained or the model from saved model folder")
             train_model_file_path = self.model_trainer_artifact.trained_model_file_path
-            model_resolver = ModelResolver()
-            is_model_accepted=True
-
-
-            if not model_resolver.is_model_exists():
+            if not self.model_resolver.is_model_exists():
+                logging.info("No model is available in saved model folder")
+                is_model_accepted=True
                 model_evaluation_artifact = ModelEvaluationArtifact(
                     is_model_accepted=is_model_accepted, 
                     improved_accuracy=None, 
@@ -56,16 +49,50 @@ class ModelEvaluation:
                     best_model_metric_artifact=None)
                 logging.info(f"Model evaluation artifact: {model_evaluation_artifact}")
                 return model_evaluation_artifact
-
-            latest_model_path = model_resolver.get_best_model_path()
-            latest_model = load_object(file_path=latest_model_path)
-            train_model = load_object(file_path=train_model_file_path)
             
-            y_trained_pred = train_model.predict(df)
-            y_latest_pred  =latest_model.predict(df)
+            #Finding location of transformer and target encoder
+            # latest_transformer_path = self.model_resolver.get_latest_transformer_path()
+            # latest_dir_path = self.model_resolver.get_latest_dir_path()
+            logging.info(f"Finding location of transformer and target encoder")
+            latest_model_path = self.model_resolver.get_latest_model_path()
+            latest_target_encoder_path = self.model_resolver.get_latest_target_encoder_path()
 
-            trained_metric = get_classification_score(y_true, y_trained_pred)
-            latest_metric = get_classification_score(y_true, y_latest_pred)
+            logging.info(f"Previous trained objects of transformer, model and target encoder")
+
+            #previous trained objects of transformer, model and target encoder
+            # latest_transformer = load_object(file_path=latest_transformer_path)
+            latest_model = load_object(file_path=latest_model_path)
+            latest_target_encoder = load_object(file_path=latest_target_encoder_path)
+
+            logging.info(f"Current trained objects of transformer, model and target encoder")
+            # trained_transformer = load_object(file_path=self.data_transformation_artifact.transformed_object_file_path) 
+            trained_model = load_object(file_path=self.model_trainer_artifact.trained_model_file_path) 
+            trained_target_encoder = load_object(file_path=self.data_transformation_artifact.target_encoder_path)
+
+            # valid_train_file_path = self.data_validation_artifact.valid_train_file_path
+            valid_test_file_path = self.data_validation_artifact.valid_test_file_path
+
+            #valid train and test file dataframe
+            test_df = pd.read_csv(valid_test_file_path)
+
+            target_df = test_df[TARGET_COLUMN]
+            y_true = latest_target_encoder.transform(target_df)
+
+            # input_feature_name = list(latest_transformer.feature_names_in_)
+            # df = latest_transformer.transform(test_df[input_feature_name])
+            y_pred = latest_model.predict(test_df)
+            logging.info(f"Prediction using latest model: {latest_target_encoder.inverse_transform(y_pred[:5])}")
+            latest_metric = get_classification_score(y_true=y_true, y_pred=y_pred)
+            logging.info(f"Accuracy using latest trained model: {latest_metric}")
+           
+            # accuracy using trained trained model
+            # input_feature_name = list(trained_transformer.feature_names_in_)
+            # df = trained_transformer.transform(test_df[input_feature_name])
+            y_pred = trained_model.predict(test_df)
+            y_true = trained_target_encoder.transform(target_df)
+            logging.info(f"Prediction using trained model: {trained_target_encoder.inverse_transform(y_pred[:5])}") 
+            trained_metric = get_classification_score(y_true=y_true, y_pred=y_pred)
+        
 
             improved_accuracy = trained_metric.f1_score-latest_metric.f1_score
             if self.model_eval_config.change_threshold < improved_accuracy:
@@ -82,7 +109,7 @@ class ModelEvaluation:
                     trained_model_path=train_model_file_path, 
                     train_model_metric_artifact=trained_metric, 
                     best_model_metric_artifact=latest_metric)
-
+            
             model_eval_report = model_evaluation_artifact.__dict__
 
             #save the report

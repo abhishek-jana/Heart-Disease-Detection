@@ -98,12 +98,31 @@ class ModelEvaluationConfig:
 class ModelPusherConfig:
 
     def __init__(self,training_pipeline_config:TrainingPipelineConfig):
-        self.model_evaluation_dir: str = os.path.join(
+        self.model_pusher_dir: str = os.path.join(
             training_pipeline_config.artifact_dir, MODEL_PUSHER_DIR_NAME
         )
-        self.model_file_path = os.path.join(self.model_evaluation_dir, MODEL_FILE_NAME)
+        self.model_pusher_dir_path = os.path.join(self.model_pusher_dir, SAVED_MODEL_DIR)
+        self.model_file_path = os.path.join(self.model_pusher_dir_path, MODEL_FILE_NAME)
+        self.pusher_transformer_path = os.path.join(self.model_pusher_dir_path, PREPROCSSING_OBJECT_FILE_NAME)
+        self.pusher_target_encoder_path = os.path.join(self.model_pusher_dir_path, TARGET_ENCODER_OBJECT_FILE_NAME)
+
         timestamp = round(datetime.now().timestamp())
         self.saved_model_path=os.path.join(
             SAVED_MODEL_DIR,
             f"{timestamp}",
+            "model",
             MODEL_FILE_NAME)
+            # SAVED_MODEL_DIR,
+            # f"{timestamp}",
+            # MODEL_FILE_NAME)
+        self.saved_transformer_path=os.path.join(
+            SAVED_MODEL_DIR,
+            f"{timestamp}",
+            "transformer",
+            PREPROCSSING_OBJECT_FILE_NAME)
+        
+        self.saved_encoder_path=os.path.join(
+            SAVED_MODEL_DIR,
+            f"{timestamp}",
+            "encoder",
+            TARGET_ENCODER_OBJECT_FILE_NAME)
