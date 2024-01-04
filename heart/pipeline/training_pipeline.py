@@ -119,4 +119,5 @@ class TrainingPipeline:
                                                             model_eval_artifact = model_eval_artifact)
             TrainingPipeline.is_pipeline_running=False
         except Exception as e:
+            TrainingPipeline.is_pipeline_running=False
             raise HeartException(e, sys)
