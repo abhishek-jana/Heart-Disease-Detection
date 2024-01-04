@@ -12,4 +12,7 @@ seaborn
 plotly-express
 imblearn
 xgboost
+fastapi
+uvicorn
+python-multipart
 -e .

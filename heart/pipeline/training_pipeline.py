@@ -23,7 +23,7 @@ import sys
 
 
 class TrainingPipeline:
-
+    is_pipeline_running=False
     def __init__(self,training_config: TrainingPipelineConfig):
         self.training_config = training_config
         self.data_ingestion_config = DataIngestionConfig(training_pipeline_config=self.training_config)
